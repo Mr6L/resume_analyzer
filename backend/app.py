@@ -42,19 +42,19 @@ logger.info(f"📁 临时目录: {os.path.abspath(TEMP_FOLDER)}")
 # 允许的文件扩展名
 ALLOWED_EXTENSIONS = {'docx'}
 
-# DeepSeek API密钥 - 从环境变量获取
-DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', 'YOUR_DEEPSEEK_API_KEY')
+# Grok API密钥 - 从环境变量获取
+GROK_API_KEY = os.getenv('GROK_API_KEY', 'YOUR_GROK_API_KEY')
 
-if DEEPSEEK_API_KEY == 'YOUR_DEEPSEEK_API_KEY':
-    logger.warning("⚠️  警告: 请在config.env文件中设置有效的DEEPSEEK_API_KEY")
+if GROK_API_KEY == 'YOUR_GROK_API_KEY':
+    logger.warning("⚠️  警告: 请在config.env文件中设置有效的GROK_API_KEY")
     logger.warning("   当前使用的是默认占位符密钥，AI分析功能将不可用")
 else:
-    logger.info(f"✅ DeepSeek API密钥已加载: {DEEPSEEK_API_KEY[:10]}...")
+    logger.info(f"✅ Grok API密钥已加载: {GROK_API_KEY[:10]}...")
 
 # 初始化解析器和分析器
 try:
     resume_parser = ResumeParser()
-    analyzer = DeepSeekAnalyzer(DEEPSEEK_API_KEY)
+    analyzer = DeepSeekAnalyzer(GROK_API_KEY)  # 传入Grok API密钥，类内部会适配
     logger.info("✅ 简历解析器和AI分析器初始化成功")
 except Exception as e:
     logger.error(f"❌ 初始化解析器失败: {str(e)}")

@@ -9,18 +9,29 @@ logger = logging.getLogger(__name__)
 
 
 class DeepSeekAnalyzer:
-    """DeepSeek API分析器"""
+    """通用AI分析器（支持DeepSeek和Grok）"""
 
-    def __init__(self, api_key: str):
-        logger.info("🤖 初始化DeepSeek分析器...")
+    def __init__(self, api_key: str, use_grok: bool = True):
+        logger.info("🤖 初始化AI分析器...")
         try:
-            self.client = OpenAI(
-                api_key=api_key,
-                base_url="https://api.deepseek.com"
-            )
-            logger.info("✅ DeepSeek客户端初始化成功")
+            if use_grok:
+                # 使用Grok API
+                self.client = OpenAI(
+                    api_key=api_key,
+                    base_url="https://api.x-ai.com/v1"
+                )
+                self.model_name = "x-ai/grok-4-fast:free"
+                logger.info("✅ Grok客户端初始化成功")
+            else:
+                # 使用DeepSeek API
+                self.client = OpenAI(
+                    api_key=api_key,
+                    base_url="https://api.deepseek.com"
+                )
+                self.model_name = "deepseek-chat"
+                logger.info("✅ DeepSeek客户端初始化成功")
         except Exception as e:
-            logger.error(f"❌ DeepSeek客户端初始化失败: {str(e)}")
+            logger.error(f"❌ AI客户端初始化失败: {str(e)}")
             raise
         self.system_prompt = """
 你是一个专业的简历分析师，请根据用户提供的简历内容，提供详细的修改建议。
@@ -53,11 +64,11 @@ class DeepSeekAnalyzer:
             user_content = self._format_resume_for_analysis(resume_data)
             logger.debug(f"📏 输入内容长度: {len(user_content)} 字符")
 
-            logger.info("🌐 调用DeepSeek API...")
-            logger.debug(f"🎯 使用模型: deepseek-chat")
+            logger.info("🌐 调用AI API...")
+            logger.debug(f"🎯 使用模型: {self.model_name}")
 
             response = self.client.chat.completions.create(
-                model="deepseek-chat",
+                model=self.model_name,
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_content}
@@ -191,7 +202,7 @@ class DeepSeekAnalyzer:
             user_content = self._format_resume_for_analysis(resume_data)
 
             response = self.client.chat.completions.create(
-                model="deepseek-chat",
+                model=self.model_name,
                 messages=[
                     {"role": "system", "content": job_prompt},
                     {"role": "user", "content": user_content}
