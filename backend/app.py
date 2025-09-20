@@ -10,7 +10,11 @@ from deepseek_analyzer import DeepSeekAnalyzer
 from dotenv import load_dotenv
 
 # 加载配置文件
-load_dotenv('../config.env')
+import os
+config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config.env')
+load_dotenv(config_path)
+print(f"加载配置文件路径: {config_path}")
+print(f"配置文件是否存在: {os.path.exists(config_path)}")
 
 # 配置日志
 logging.basicConfig(
@@ -45,11 +49,14 @@ ALLOWED_EXTENSIONS = {'docx'}
 # Grok API密钥 - 从环境变量获取
 GROK_API_KEY = os.getenv('GROK_API_KEY', 'YOUR_GROK_API_KEY')
 
+# 调试输出
+logger.info(f"🔍 调试: GROK_API_KEY = {GROK_API_KEY[:15] if GROK_API_KEY != 'YOUR_GROK_API_KEY' else 'YOUR_GROK_API_KEY'}...")
+
 if GROK_API_KEY == 'YOUR_GROK_API_KEY':
     logger.warning("⚠️  警告: 请在config.env文件中设置有效的GROK_API_KEY")
     logger.warning("   当前使用的是默认占位符密钥，AI分析功能将不可用")
 else:
-    logger.info(f"✅ Grok API密钥已加载: {GROK_API_KEY[:10]}...")
+    logger.info(f"✅ 检测到有效的Grok API密钥")
 
 # 初始化解析器和分析器
 try:
@@ -141,7 +148,7 @@ def analyze_resume():
 
         resume_data = data['resume_data']
 
-        # 使用DeepSeek分析简历
+        # 使用Grok分析简历
         analysis_result = analyzer.analyze_resume(resume_data)
 
         if not analysis_result['success']:
@@ -287,5 +294,5 @@ if __name__ == '__main__':
     print("启动简历分析后端服务...")
     print(f"上传目录: {os.path.abspath(UPLOAD_FOLDER)}")
     print(f"临时目录: {os.path.abspath(TEMP_FOLDER)}")
-    print("请确保已设置DeepSeek API密钥")
+    print("请确保已设置Grok API密钥")
     app.run(host='127.0.0.1', port=5000, debug=True)

@@ -210,6 +210,15 @@ class ResumeAnalyzerFrontend:
                 text-align: center;
                 background-color: #fafafa;
             }
+            .output-scroll {
+                max-height: 420px;
+                overflow-y: auto;
+                padding-right: 12px;
+                background: #f8f9fa;
+                border: 1px solid #e1e5e9;
+                border-radius: 8px;
+                padding: 16px;
+            }
             """
         ) as interface:
 
@@ -253,19 +262,22 @@ class ResumeAnalyzerFrontend:
                         with gr.TabItem("📋 简历解析"):
                             parsed_output = gr.Markdown(
                                 label="解析结果",
-                                value="请上传简历文件进行分析..."
+                                value="请上传简历文件进行分析...",
+                                elem_classes=["output-scroll"]
                             )
 
                         with gr.TabItem("🔍 AI分析建议"):
                             analysis_output = gr.Markdown(
                                 label="分析建议",
-                                value="等待分析结果..."
+                                value="等待分析结果...",
+                                elem_classes=["output-scroll"]
                             )
 
                         with gr.TabItem("💼 岗位推荐"):
                             recommendations_output = gr.Markdown(
                                 label="岗位推荐",
-                                value="等待推荐结果..."
+                                value="等待推荐结果...",
+                                elem_classes=["output-scroll"]
                             )
 
             # 事件绑定

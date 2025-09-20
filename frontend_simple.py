@@ -62,27 +62,27 @@ def analyze_resume(file):
                 print(f"[前端] 分析结果字段: {list(analysis.keys()) if analysis else '无'}")
                 print(f"[前端] 推荐结果长度: {len(recommendations) if recommendations else 0}")
 
-                # 格式化个人信息
+                # 简化的解析结果显示
                 parsed_text = "解析结果:\n\n"
-                if parsed_data.get('personal_info'):
-                    parsed_text += "个人信息:\n"
-                    for k, v in parsed_data['personal_info'].items():
+
+                # 显示文档的基本信息
+                if parsed_data.get('text_length'):
+                    parsed_text += f"文档长度: {parsed_data['text_length']} 字符\n"
+                if parsed_data.get('paragraphs'):
+                    parsed_text += f"段落数量: {len(parsed_data['paragraphs'])} 个\n"
+
+                # 显示提取到的基本信息
+                if parsed_data.get('basic_info'):
+                    parsed_text += "\n提取的基本信息:\n"
+                    for k, v in parsed_data['basic_info'].items():
                         parsed_text += f"  {k}: {v}\n"
 
-                if parsed_data.get('education'):
-                    parsed_text += "\n教育背景:\n"
-                    for edu in parsed_data['education']:
-                        parsed_text += f"  - {edu.get('内容', '')}\n"
-
-                if parsed_data.get('work_experience'):
-                    parsed_text += "\n工作经历:\n"
-                    for work in parsed_data['work_experience']:
-                        parsed_text += f"  - {work.get('内容', '')}\n"
-
-                if parsed_data.get('skills'):
-                    parsed_text += "\n技能:\n"
-                    for skill in parsed_data['skills']:
-                        parsed_text += f"  - {skill}\n"
+                # 显示完整的文档内容
+                if parsed_data.get('raw_text'):
+                    parsed_text += "\n完整文档内容:\n"
+                    parsed_text += "=" * 40 + "\n"
+                    parsed_text += parsed_data['raw_text']
+                    parsed_text += "\n" + "=" * 40
 
                 # 格式化分析结果
                 analysis_text = "AI分析建议:\n\n"
@@ -134,7 +134,20 @@ def check_backend():
         return "无法连接后端服务"
 
 # 创建界面
-with gr.Blocks(title="简历分析系统") as app:
+with gr.Blocks(
+    title="简历分析系统",
+    css="""
+    .output-scroll {
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 12px;
+        background: #f8f9fa;
+        border: 1px solid #e1e5e9;
+        border-radius: 8px;
+        padding: 16px;
+    }
+    """
+) as app:
     gr.Markdown("# 智能简历分析系统")
     gr.Markdown("上传Word格式简历，获得AI分析和建议")
 
@@ -159,21 +172,20 @@ with gr.Blocks(title="简历分析系统") as app:
                     parsed_output = gr.Textbox(
                         label="解析结果",
                         lines=15,
-                        value="等待上传文件..."
+                        value="等待上传文件...",
+                        elem_classes=["output-scroll"]
                     )
 
                 with gr.TabItem("AI分析建议"):
-                    analysis_output = gr.Textbox(
-                        label="分析建议",
-                        lines=15,
-                        value="等待分析结果..."
+                    analysis_output = gr.Markdown(
+                        value="等待分析结果...",
+                        elem_classes=["output-scroll"]
                     )
 
                 with gr.TabItem("岗位推荐"):
-                    recommendations_output = gr.Textbox(
-                        label="岗位推荐",
-                        lines=15,
-                        value="等待推荐结果..."
+                    recommendations_output = gr.Markdown(
+                        value="等待推荐结果...",
+                        elem_classes=["output-scroll"]
                     )
 
     # 绑定事件
@@ -210,13 +222,14 @@ if __name__ == "__main__":
         print("   请确保后端服务已启动: python backend/app.py")
 
     print("2. 启动前端界面...")
-    print("   前端地址: http://127.0.0.1:7864")
+    print("   Gradio将自动寻找可用端口...")
     print("   按 Ctrl+C 停止服务")
     print("=" * 40)
 
+    # 让Gradio自动寻找可用端口
     app.launch(
         server_name="127.0.0.1",
-        server_port=7864,
+        server_port=None,  # 让Gradio自动选择端口
         share=False,
         show_error=True,
         inbrowser=False

@@ -15,13 +15,24 @@ class DeepSeekAnalyzer:
         logger.info("🤖 初始化AI分析器...")
         try:
             if use_grok:
-                # 使用Grok API
-                self.client = OpenAI(
-                    api_key=api_key,
-                    base_url="https://api.x-ai.com/v1"
-                )
-                self.model_name = "x-ai/grok-4-fast:free"
-                logger.info("✅ Grok客户端初始化成功")
+                # 检查API密钥格式
+                if api_key.startswith('sk-or-'):
+                    # 使用OpenRouter的Grok API
+                    self.client = OpenAI(
+                        api_key=api_key,
+                        base_url="https://openrouter.ai/api/v1",
+                        default_headers={"HTTP-Referer": "http://localhost:5000", "X-Title": "Resume Analyzer"}
+                    )
+                    self.model_name = "x-ai/grok-4-fast:free"
+                    logger.info("✅ OpenRouter Grok客户端初始化成功")
+                else:
+                    # 假设是官方API密钥
+                    self.client = OpenAI(
+                        api_key=api_key,
+                        base_url="https://api.x-ai.com/v1"
+                    )
+                    self.model_name = "grok-beta"
+                    logger.info("✅ X.AI官方客户端初始化成功")
             else:
                 # 使用DeepSeek API
                 self.client = OpenAI(
@@ -106,43 +117,24 @@ class DeepSeekAnalyzer:
             }
 
     def _format_resume_for_analysis(self, resume_data: Dict) -> str:
-        """格式化简历数据供分析"""
+        """格式化简历数据供分析（简化版）"""
         formatted_content = "以下是简历内容:\n\n"
 
-        # 个人信息
-        if resume_data.get('personal_info'):
-            formatted_content += "个人信息:\n"
-            for key, value in resume_data['personal_info'].items():
+        # 基本信息（如果有的话）
+        if resume_data.get('basic_info'):
+            formatted_content += "提取到的基本信息:\n"
+            for key, value in resume_data['basic_info'].items():
                 formatted_content += f"{key}: {value}\n"
             formatted_content += "\n"
 
-        # 教育背景
-        if resume_data.get('education'):
-            formatted_content += "教育背景:\n"
-            for edu in resume_data['education']:
-                formatted_content += f"- {edu.get('内容', '')}\n"
-            formatted_content += "\n"
-
-        # 工作经历
-        if resume_data.get('work_experience'):
-            formatted_content += "工作经历:\n"
-            for work in resume_data['work_experience']:
-                formatted_content += f"- {work.get('内容', '')}\n"
-            formatted_content += "\n"
-
-        # 技能
-        if resume_data.get('skills'):
-            formatted_content += "技能:\n"
-            for skill in resume_data['skills']:
-                formatted_content += f"- {skill}\n"
-            formatted_content += "\n"
-
-        # 项目经历
-        if resume_data.get('projects'):
-            formatted_content += "项目经历:\n"
-            for project in resume_data['projects']:
-                formatted_content += f"- {project.get('内容', '')}\n"
-            formatted_content += "\n"
+        # 完整的原始文本内容
+        if resume_data.get('raw_text'):
+            formatted_content += "完整简历内容:\n"
+            formatted_content += "=" * 40 + "\n"
+            formatted_content += resume_data['raw_text']
+            formatted_content += "\n" + "=" * 40
+        else:
+            formatted_content += "未能获取到简历内容"
 
         return formatted_content
 
